@@ -76,6 +76,7 @@ main {
     background: #94a3b8;
     box-shadow: 0px 0px 2px 2px #94a3b8;
     margin: 8px;
+    border: #787c81 2px solid;
 }
 
 .modal button{
@@ -86,6 +87,8 @@ main {
     background: #cbd5e1;
     box-shadow: 0px 0px 2px 2px #cbd5e1;
     margin: 8px;
+    border: #787c81 2px solid;
+
 }
 
 .modal div {
