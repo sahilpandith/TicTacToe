@@ -6,8 +6,235 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./style.css">
     <title>Document</title>
+    <style>
+       
+    </style>
 </head>
 <body>
-    
+    <div class="container">
+        <header><h1>Tic Tac Toe</h1></header>
+        <main>
+           <div class="gameboard">
+            <div data-row="1" data-col="1"></div>
+            <div data-row="1" data-col="2"></div>
+            <div data-row="1" data-col="3"></div>
+            <div data-row="2" data-col="1"></div>
+            <div data-row="2" data-col="2"></div>
+            <div data-row="2" data-col="3"></div>
+            <div data-row="3" data-col="1"></div>
+            <div data-row="3" data-col="2"></div>
+            <div data-row="3" data-col="3"></div>
+           </div>
+           <div class="actions">
+               <button class="start" type="button"> Start</button>
+               <button class="restart" type="button"> Restart</button>
+           </div>
+        </main>
+        <footer>
+            <div class="player-name-display">
+                <div class="player1-name"></div>
+                <div class="vs"></div>
+                <div class="player2-name"></div>
+            </div>
+            <div class="anounce-winner">
+            </div>
+        </footer>
+        <div class="modal">
+            <div class="modal-text"></div>
+            <button class="modal-btn">Close</button>
+        </div>
+        <script>
+            function Player(name,sign){
+                  return {
+                      name,
+                      sign
+                  }
+            }
+
+            const gameboard = (function(){
+                let player1 ;
+                let player2 ;
+                let movesCount =0;
+                let hasWon = false;
+                const scoreBoard = [['','',''],['','',''],['','','']]
+                let player1Turn = true;
+                let player1WinCount =0;
+                let player2WinCount =0;
+                function setPlayerInformation(){
+                    const p1Name = prompt('Enter Player1 Name');
+                    const p2Name = prompt('Enter Player2 Name');
+                    player1 = p1Name ? Player(p1Name,'X') : Player('Player 1','X');
+                    player2 = p2Name ? Player(p2Name,'0') : Player('Player 2','O');;
+                    setPlayerInfoInFooter(player1,player2)
+                }
+                function start(){
+                    restart();
+                    player1WinCount=0;
+                    player2WinCount =0;
+                    setPlayerInformation();
+                    const gameBoardNode = document.querySelector(".gameboard");
+                    gameBoardNode.addEventListener('click', play);
+                }
+                function setPlayerInfoInFooter(p1,p2){
+                    document.querySelector('.player1-name').textContent = p1.name + '(X)';
+                    document.querySelector('.vs').textContent = 'vs';
+                    document.querySelector('.player2-name').textContent = p2.name + '(O)';
+                }
+                function clearPlayerInfoInFooter(){
+                    document.querySelector('.player1-name').textContent = '';
+                    document.querySelector('.vs').textContent = '';
+                    document.querySelector('.player2-name').textContent = '';
+                }
+                function clearBoard(){
+                    document.querySelectorAll('.gameboard div').forEach(node => node.innerHTML= "")
+                }
+                function restart(){
+                    clearBoard();
+                    player1Turn=true;
+                    movesCount=0;
+                    hasWon= false;
+                    // clearPlayerInfoInFooter();
+                    // setPlayerInformation();
+                }
+                function play(event){
+                        const row = event.target.dataset.row;
+                        const col = event.target.dataset.col;
+                        console.log({row,col});
+                        if(hasWon){
+                            alert('Game is over. Restart the game');
+                            return;
+                        }
+                        if(event.target.textContent || movesCount===9){
+                            return;
+                        }
+                        if(player1Turn){
+                            event.target.textContent = player1.sign;
+                        }else{
+                            event.target.textContent = player2.sign;
+                        }
+                        
+                        movesCount++;
+                        hasWon = checkMove(parseInt(row),parseInt(col));
+                        if(hasWon){
+                            const winingPlayerName = player1Turn ? player1.name : player2.name ; 
+                            player1Turn && player1WinCount++;
+                            !player1Turn && player2WinCount++;
+                            const message = `${winingPlayerName} has won`
+                            // alert(message)
+                            openModal();
+                            const modalTextNode = document.querySelector('.modal div');
+                            modalTextNode.textContent = message;
+                        }
+                        if(!hasWon && movesCount===9){
+                            alert('game drawn')
+                            // document.querySelector('.anounce-winner').textContent ='Game Drawn';
+                        }
+                        player1Turn= !player1Turn;
+                        console.log({player1WinCount,player2WinCount})
+                }
+                const modal = document.querySelector('.modal');
+                function openModal (){
+                    modal.style.setProperty('display','grid');
+                }
+                function closeModal(){
+                    modal.style.setProperty('display','none');
+                }
+                function checkMove(row,col){
+                    const validLinesToCheck = []
+                    const nonDiagonalOperationsForIndex1 = [1,2];
+                    const nonDiagonalOperationsForIndex2 = [1,-1];
+                    const nonDiagonalOperationsForIndex3 = [-2,-1];
+                   
+                    function getValidLine(possibleRows,possibleCols){
+                        const validLine = [];
+                        if(Array.isArray(possibleRows)){
+                            possibleRows.forEach(possibleRow => {
+                            validLine.push([possibleRow,col]); 
+                            })
+                        }else if(Array.isArray(possibleCols)){
+                            possibleCols.forEach(possibleCol => {
+                            validLine.push([row,possibleCol]); 
+                            })
+                        }
+                        return validLine
+                    }
+                    // for row non diagonals
+                    if(row===1){
+                        let possibleRows = [...nonDiagonalOperationsForIndex1.map(val => row + val)];
+                        possibleRows.splice(0,0,row);
+                        validLinesToCheck.push(getValidLine(possibleRows,col));
+                    }else if(row===2){
+                        const possibleRows = [...nonDiagonalOperationsForIndex2.map(val => row + val)];
+                        possibleRows.splice(1,0,row);
+                        validLinesToCheck.push(getValidLine(possibleRows,col));
+                    }else if(row===3){
+                        const possibleRows = [...nonDiagonalOperationsForIndex3.map(val => row + val)];
+                        possibleRows.splice(2,0,row);
+                        validLinesToCheck.push(getValidLine(possibleRows,col));
+                    }
+                    
+
+                    //for col non diaginals
+                    if(col===1){
+                        let possibleCols = [...nonDiagonalOperationsForIndex1.map(val => col + val)];
+                        possibleCols.splice(0,0,col);
+                        validLinesToCheck.push(getValidLine(row,possibleCols));
+                    }else if(col===2){
+                        let possibleCols = [...nonDiagonalOperationsForIndex2.map(val => col + val)];
+                        possibleCols.splice(1,0,col);
+                        validLinesToCheck.push(getValidLine(row,possibleCols));
+                    }else if(col===3){
+                        let possibleCols = [...nonDiagonalOperationsForIndex3.map(val => col + val)];
+                        possibleCols.splice(2,0,col);
+                        validLinesToCheck.push(getValidLine(row,possibleCols));
+                    }
+                    
+
+                    //for diagoinals 
+                    if((col ===1 && row===1) || (col === 3 && row=== 3)){
+                        validLinesToCheck.push([[1,1],[2,2],[3,3]]);
+                    }
+                    if((col ===1 && row===3) || (col === 3 && row=== 1)){
+                        validLinesToCheck.push([[1,3],[2,2],[3,1]]);
+                    }
+                    if(col === 2 && row === 2){
+                        validLinesToCheck.push([[1,1],[2,2],[3,3]]);
+                        validLinesToCheck.push([[1,3],[2,2],[3,1]]);
+                    }
+                    
+                    console.log(validLinesToCheck);
+
+                    const ThreeInARowLinesTextArray = validLinesToCheck.map(line => {
+                        lineTextArray = line.map(([row,col]) => {
+                            const move =document.querySelector(`[data-row='${row}'][data-col='${col}']`).textContent;
+                            return move ? move : undefined 
+                        })
+                        return lineTextArray
+                    }).map(lineTextArray => lineTextArray.join('-'))
+                    console.log(ThreeInARowLinesTextArray);
+
+                    const hasWon = ThreeInARowLinesTextArray.some(lineTextArray => {
+                        return ['OOO','XXX'].includes(lineTextArray.split('-').join(''));
+                    } )
+                    return hasWon;
+                }
+                return {
+                    start,
+                    restart,
+                    closeModal
+                }
+            })();
+            
+            const startButton = document.querySelector('.start');
+            startButton.addEventListener('click',gameboard.start);
+            const restartButton = document.querySelector('.restart');
+            restartButton.addEventListener('click',gameboard.restart);
+
+            const modalBtn = document.querySelector('.modal-btn');
+            modalBtn.addEventListener('click', gameboard.closeModal);
+
+            
+        </script>
+    </div>
 </body>
 </html>
